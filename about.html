@@ -73,4 +73,234 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             /* 텍스트가 잘 보이도록 검은색 그라데이션 추가 */
-            background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 5
+            background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding-left: 8%; /* 왼쪽 여백 */
+            max-width: 550px;
+        }
+
+        .new-badge {
+            background-color: #007aff; /* Apple Blue */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .hero-title {
+            font-size: 4rem; /* 제목 아주 크게 */
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+        }
+
+        .hero-meta {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hero-release {
+            color: #d1d1d6;
+            font-weight: 500;
+        }
+
+        .hero-price {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .hero-desc {
+            color: #e5e5ea;
+            font-size: 1.1rem;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .hero-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 99px; /* 둥근 알약 버튼 */
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .hero-btn:hover {
+            transform: scale(1.05);
+            background-color: #f2f2f7;
+        }
+
+        /* 4. Game List Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 100px auto;
+            padding: 0 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        /* 5. Game Cards Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 30px;
+        }
+
+        /* 카드 디자인 (자바스크립트가 만들 예정) */
+        .game-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 160px;
+            background-color: #eee;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 20px;
+        }
+
+        .game-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #1d1d1f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #86868b;
+        }
+
+        .card-price {
+            color: #1d1d1f;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .discount {
+            color: #e02b2b; /* 세일 표시는 빨간색 */
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">TLXO</a>
+        <nav class="nav-menu">
+            <a href="#">New Releases</a>
+            <a href="#">Coming Soon</a>
+            <a href="#">About</a>
+        </nav>
+    </header>
+
+    <div class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="new-badge">FEATURED NEW</span>
+            <h1 class="hero-title">Elden Ring<br>Shadow of the Erdtree</h1>
+            <div class="hero-meta">
+                <span class="hero-release">Released: June 21, 2024</span>
+                <span class="hero-price">$39.99</span>
+            </div>
+            <p class="hero-desc">The long-awaited expansion to the Game of the Year. Discover new weapons, enemies, and a brand new storyline in the Land of Shadow.</p>
+            <button class="hero-btn">View on Steam</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Trending Now</h2>
+            <a href="#" style="color:#0066cc; text-decoration:none; font-weight:500;">View All ></a>
+        </div>
+
+        <div class="game-grid" id="game-list">
+            <div class="game-card">
+                <img src="https://picsum.photos/300/160" class="card-image">
+                <div class="card-info">
+                    <h3 class="game-title">Sample Game Title</h3>
+                    <div class="card-meta">
+                        <span>Feb 25, 2024</span>
+                        <div>
+                            <span class="discount">-20%</span>
+                            <span class="card-price">$49.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="game-card">
+                <img src="https://picsum.photos/300/160?random=2" class="card-image">
+                <div class="card-info">
+                    <h3 class="game-title">Another Game</h3>
+                    <div class="card-meta">
+                        <span>Mar 01, 2024</span>
+                        <span class="card-price">$29.99</span>
+                    </div>
+                </div>
+            </div>
+             <div class="game-card">
+                <img src="https://picsum.photos/300/160?random=3" class="card-image">
+                <div class="card-info">
+                    <h3 class="game-title">Indie Hit 2024</h3>
+                    <div class="card-meta">
+                        <span>Available Now</span>
+                        <span class="card-price">Free</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
