@@ -1,5 +1,4 @@
-// 스팀 신작 데이터만 엄격하게 가져오는 주소
-const STEAM_API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories');
+const STEAM_API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories') + '&cache=' + new Date().getTime();
 
 async function fetchGameData() {
     try {
