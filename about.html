@@ -1,305 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>TLXO - New Releases</title>
-    <style>
-        /* 1. Base Setup */
-        body {
-            background-color: #f5f5f7;
-            color: #1d1d1f;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.5;
-        }
-
-        /* 2. Navigation Bar */
-        header {
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 18px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #d2d2d7;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-weight: 800;
-            font-size: 1.6rem;
-            text-decoration: none;
-            color: #1d1d1f;
-            letter-spacing: -1px;
-        }
-
-        .nav-menu a {
-            color: #6e6e73;
-            text-decoration: none;
-            margin-left: 28px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-menu a:hover {
-            color: #0066cc;
-        }
-
-        /* 3. Hero Section (New Release Banner) */
-        .hero-section {
-            position: relative;
-            width: 100%;
-            height: 550px; /* 배너 높이 */
-            /* 배경 이미지: 나중에 JS로 교체됩니다 */
-            background-image: url('https://cdn.akamai.steamstatic.com/steam/apps/1880360/library_hero.jpg'); 
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            color: white;
-            margin-bottom: 60px;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            /* 텍스트가 잘 보이도록 검은색 그라데이션 추가 */
-            background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            padding-left: 8%; /* 왼쪽 여백 */
-            max-width: 550px;
-        }
-
-        .new-badge {
-            background-color: #007aff; /* Apple Blue */
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        .hero-title {
-            font-size: 4rem; /* 제목 아주 크게 */
-            margin: 0 0 15px 0;
-            font-weight: 800;
-            line-height: 1.05;
-            letter-spacing: -2px;
-        }
-
-        .hero-meta {
-            font-size: 1.3rem;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .hero-release {
-            color: #d1d1d6;
-            font-weight: 500;
-        }
-
-        .hero-price {
-            color: #fff;
-            font-weight: 700;
-        }
-
-        .hero-desc {
-            color: #e5e5ea;
-            font-size: 1.1rem;
-            margin-bottom: 35px;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .hero-btn {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 14px 32px;
-            border-radius: 99px; /* 둥근 알약 버튼 */
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-
-        .hero-btn:hover {
-            transform: scale(1.05);
-            background-color: #f2f2f7;
-        }
-
-        /* 4. Game List Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto 100px auto;
-            padding: 0 24px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #e5e5e5;
-            padding-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: -1px;
-        }
-
-        /* 5. Game Cards Grid */
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 30px;
-        }
-
-        /* 카드 디자인 (자바스크립트가 만들 예정) */
-        .game-card {
-            background-color: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.04);
-            cursor: pointer;
-        }
-
-        .game-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        .card-image {
-            width: 100%;
-            height: 160px;
-            background-color: #eee;
-            object-fit: cover;
-        }
-
-        .card-info {
-            padding: 20px;
-        }
-
-        .game-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0 0 8px 0;
-            color: #1d1d1f;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            color: #86868b;
-        }
-
-        .card-price {
-            color: #1d1d1f;
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        
-        .discount {
-            color: #e02b2b; /* 세일 표시는 빨간색 */
-            margin-left: 5px;
-        }
-    </style>
+    <title>Steam New Releases</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <header>
-        <a href="index.html" class="logo">TLXO</a>
-        <nav class="nav-menu">
-            <a href="#">New Releases</a>
-            <a href="#">Coming Soon</a>
-            <a href="#">About</a>
-        </nav>
-    </header>
+    <nav class="navbar">
+        <div class="logo">SteamTracker</div>
+        <div class="menu">
+            <a href="#">Home</a>
+            <a href="#" class="active">New Releases</a>
+            <a href="#">Top Sellers</a>
+        </div>
+    </nav>
 
-    <div class="hero-section">
-        <div class="hero-overlay"></div>
+    <section class="hero-section">
         <div class="hero-content">
-            <span class="new-badge">FEATURED NEW</span>
-            <h1 class="hero-title">Elden Ring<br>Shadow of the Erdtree</h1>
-            <div class="hero-meta">
-                <span class="hero-release">Released: June 21, 2024</span>
-                <span class="hero-price">$39.99</span>
+            <span class="hero-badge">Featured & Recommended</span>
+            <h1 class="hero-title">Loading Game...</h1>
+            <p class="hero-price">--</p>
+            <div class="hero-buttons">
+                <button class="hero-btn">Play Now</button>
             </div>
-            <p class="hero-desc">The long-awaited expansion to the Game of the Year. Discover new weapons, enemies, and a brand new storyline in the Land of Shadow.</p>
-            <button class="hero-btn">View on Steam</button>
+            <p class="hero-release">Loading date...</p>
         </div>
-    </div>
+    </section>
 
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Trending Now</h2>
-            <a href="#" style="color:#0066cc; text-decoration:none; font-weight:500;">View All ></a>
+    <section class="container" style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
+        
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+            <div>
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">Trending Now</h2>
+                <a href="https://store.steampowered.com/search/?sort_by=Released_DESC" target="_blank" style="color: #007aff; text-decoration: none; font-size: 0.9rem;">View All on Steam</a>
+            </div>
+            <p id="update-time" style="color: #888; font-size: 0.85rem; font-weight: 500; margin: 0;"></p>
         </div>
 
-        <div class="game-grid" id="game-list">
-            <div class="game-card">
-                <img src="https://picsum.photos/300/160" class="card-image">
-                <div class="card-info">
-                    <h3 class="game-title">Sample Game Title</h3>
-                    <div class="card-meta">
-                        <span>Feb 25, 2024</span>
-                        <div>
-                            <span class="discount">-20%</span>
-                            <span class="card-price">$49.99</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-             <div class="game-card">
-                <img src="https://picsum.photos/300/160?random=2" class="card-image">
-                <div class="card-info">
-                    <h3 class="game-title">Another Game</h3>
-                    <div class="card-meta">
-                        <span>Mar 01, 2024</span>
-                        <span class="card-price">$29.99</span>
-                    </div>
-                </div>
-            </div>
-             <div class="game-card">
-                <img src="https://picsum.photos/300/160?random=3" class="card-image">
-                <div class="card-info">
-                    <h3 class="game-title">Indie Hit 2024</h3>
-                    <div class="card-meta">
-                        <span>Available Now</span>
-                        <span class="card-price">Free</span>
-                    </div>
-                </div>
-            </div>
+        <div id="game-list" class="game-grid">
+            <p style="color: #666; text-align: center; width: 100%;">Fetching latest data from Steam...</p>
         </div>
-    </div>
+
+    </section>
 
     <script src="script.js"></script>
 </body>
