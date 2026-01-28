@@ -1,35 +1,31 @@
-// [변경 1] 배달부 주소를 'raw' 타입으로 변경하여 차단을 우회 시도
-const STEAM_API_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories?l=english');
+// 이제 외부 사이트가 아니라, 로봇이 만들어준 내 파일을 읽습니다.
+const DATA_FILE = './games.json';
 
 async function fetchGameData() {
     try {
-        console.log("📡 스팀 신작 데이터 요청 중...");
+        console.log("📂 저장된 게임 데이터(games.json)를 여는 중...");
         
-        // 타임아웃 설정: 5초 안에 응답 없으면 바로 포기하고 비상용 데이터 띄움
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(STEAM_API_URL, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
-
-        const steamData = await response.json();
-        const newReleases = steamData.NewReleases;
+        // 1. 파일 읽기
+        const response = await fetch(DATA_FILE);
         
-        if (!newReleases || !newReleases.items || newReleases.items.length === 0) {
-            throw new Error("신작 리스트가 비어있습니다.");
+        if (!response.ok) {
+            throw new Error("아직 로봇이 데이터를 안 가져왔나 봐요.");
         }
 
-        const games = newReleases.items;
-        console.log("✅ 데이터 수신 성공!", games.length);
+        const data = await response.json();
+        const games = data.items; // 저장된 구조에 따라 items를 가져옴
 
+        if (!games || games.length === 0) throw new Error("비어있는 데이터");
+
+        console.log("✅ 로딩 성공! 게임 개수:", games.length);
+
+        // 2. 화면 꾸미기
         updateHeroSection(games[0]);
         updateGameGrid(games.slice(1, 13));
 
     } catch (error) {
-        console.warn("⚠️ 스팀 연결 실패 (오공 아님, 최신 기대작으로 대체합니다):", error);
-        useFallbackData(); // 연결 실패 시 '몬스터 헌터 와일즈' 등이 나옴
+        console.warn("⚠️ 파일 로드 실패. (로봇이 일하는 중일 수 있습니다)", error);
+        useFallbackData(); // 아직 파일이 안 만들어졌으면 비상용 데이터 표시
     }
 }
 
@@ -40,13 +36,11 @@ function updateHeroSection(game) {
     const releaseDate = document.querySelector('.hero-release');
     const btn = document.querySelector('.hero-btn');
 
-    // 이미지 주소 생성
+    // 이미지 경로 설정
     const heroImage = `https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/library_hero.jpg`;
     const headerImage = game.header_image || `https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/header.jpg`;
 
-    // 배경 이미지: hero 이미지가 없으면 header 이미지라도 쓰도록 설정
     heroSection.style.backgroundImage = `url('${heroImage}'), url('${headerImage}')`;
-    
     title.innerText = game.name;
     
     if (game.final_price === 0) {
@@ -55,7 +49,7 @@ function updateHeroSection(game) {
         price.innerText = `$${(game.final_price / 100).toFixed(2)}`;
     }
 
-    releaseDate.innerText = "Featured & Recommended"; 
+    releaseDate.innerText = "Fresh from Steam";
     btn.onclick = () => window.open(`https://store.steampowered.com/app/${game.id}`, '_blank');
 }
 
@@ -67,17 +61,8 @@ function updateGameGrid(games) {
         const card = document.createElement('div');
         card.className = 'game-card';
         
-        let priceText = '';
-        if (game.final_price === 0) {
-            priceText = "Free";
-        } else {
-            priceText = `$${(game.final_price / 100).toFixed(2)}`;
-        }
-
-        let discountHtml = '';
-        if (game.discount_percent > 0) {
-            discountHtml = `<span class="discount">-${game.discount_percent}%</span>`;
-        }
+        let priceText = game.final_price === 0 ? "Free" : `$${(game.final_price / 100).toFixed(2)}`;
+        let discountHtml = game.discount_percent > 0 ? `<span class="discount">-${game.discount_percent}%</span>` : '';
 
         card.innerHTML = `
             <img src="${game.header_image}" class="card-image" alt="${game.name}">
@@ -85,53 +70,20 @@ function updateGameGrid(games) {
                 <h3 class="game-title">${game.name}</h3>
                 <div class="card-meta">
                     <span style="font-size:0.8rem; color:#007aff;">New</span>
-                    <div>
-                        ${discountHtml}
-                        <span class="card-price">${priceText}</span>
-                    </div>
+                    <div>${discountHtml}<span class="card-price">${priceText}</span></div>
                 </div>
             </div>
         `;
-
         card.onclick = () => window.open(`https://store.steampowered.com/app/${game.id}`, '_blank');
         grid.appendChild(card);
     });
 }
 
-// [핵심 변경] 비상용 데이터를 '오공'에서 '몬스터 헌터 와일즈' 등 최신작으로 교체
 function useFallbackData() {
+    // 로봇이 아직 파일을 못 만들었을 때 보여줄 임시 데이터 (몬헌 와일즈 등)
     const fallbackGames = [
-        // 1. 메인 배너: 몬스터 헌터 와일즈 (2025 기대작)
-        { 
-            id: 2246340, 
-            name: "Monster Hunter Wilds", 
-            final_price: 6999, 
-            discount_percent: 0, 
-            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2246340/header.jpg" 
-        },
-        // 2. 문명 7
-        { 
-            id: 1295660, 
-            name: "Sid Meier's Civilization® VII", 
-            final_price: 6999, 
-            discount_percent: 0, 
-            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1295660/header.jpg" 
-        },
-        // 3. GTA 6 (가상의 데이터로 분위기 냄)
-        { 
-            id: 271590, // GTA5 ID를 빌려씀
-            name: "Grand Theft Auto VI", 
-            final_price: 6999, 
-            discount_percent: 0, 
-            header_image: "https://shared.fastly.steamstatic.com/store_images/library/hero.jpg" 
-        },
-        { 
-            id: 1086940, 
-            name: "Baldur's Gate 3", 
-            final_price: 5999, 
-            discount_percent: 10, 
-            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1086940/header.jpg" 
-        }
+        { id: 2246340, name: "Monster Hunter Wilds", final_price: 6999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2246340/header.jpg" },
+        { id: 1245620, name: "Elden Ring", final_price: 5999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg" }
     ];
     updateHeroSection(fallbackGames[0]);
     updateGameGrid(fallbackGames);
