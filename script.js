@@ -1,15 +1,20 @@
-// 1. 배달부 교체: 더 안정적인 corsproxy.io를 사용합니다.
-const STEAM_API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories');
+// [변경 1] 배달부 주소를 'raw' 타입으로 변경하여 차단을 우회 시도
+const STEAM_API_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories?l=english');
 
 async function fetchGameData() {
     try {
-        console.log("📡 스팀 서버에 신호 보내는 중...");
-        const response = await fetch(STEAM_API_URL);
+        console.log("📡 스팀 신작 데이터 요청 중...");
         
-        // 2. 데이터 포장 뜯기 방식 변경 (배달부가 바뀌어서 포장 방식도 달라짐)
-        // 이전 배달부(AllOrigins)와 달리, 이번 배달부는 스팀 데이터를 그대로 줍니다.
-        const steamData = await response.json(); 
+        // 타임아웃 설정: 5초 안에 응답 없으면 바로 포기하고 비상용 데이터 띄움
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
+        const response = await fetch(STEAM_API_URL, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+
+        const steamData = await response.json();
         const newReleases = steamData.NewReleases;
         
         if (!newReleases || !newReleases.items || newReleases.items.length === 0) {
@@ -17,18 +22,14 @@ async function fetchGameData() {
         }
 
         const games = newReleases.items;
-        console.log("✅ 데이터 수신 성공! 게임 개수:", games.length);
+        console.log("✅ 데이터 수신 성공!", games.length);
 
-        // 1. 대형 배너 (1번째 게임)
         updateHeroSection(games[0]);
-
-        // 2. 카드 리스트 (나머지 게임)
         updateGameGrid(games.slice(1, 13));
 
     } catch (error) {
-        console.error("🚨 연결 실패! 원인:", error);
-        // 실패하면 비상용 데이터를 보여줍니다.
-        useFallbackData();
+        console.warn("⚠️ 스팀 연결 실패 (오공 아님, 최신 기대작으로 대체합니다):", error);
+        useFallbackData(); // 연결 실패 시 '몬스터 헌터 와일즈' 등이 나옴
     }
 }
 
@@ -38,26 +39,23 @@ function updateHeroSection(game) {
     const price = document.querySelector('.hero-price');
     const releaseDate = document.querySelector('.hero-release');
     const btn = document.querySelector('.hero-btn');
-    const newBadge = document.querySelector('.new-badge'); // 배지 선택자 추가
 
+    // 이미지 주소 생성
     const heroImage = `https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/library_hero.jpg`;
-    
-    // 이미지 설정
-    heroSection.style.backgroundImage = `url('${heroImage}'), url('${game.header_image}')`;
+    const headerImage = game.header_image || `https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/header.jpg`;
+
+    // 배경 이미지: hero 이미지가 없으면 header 이미지라도 쓰도록 설정
+    heroSection.style.backgroundImage = `url('${heroImage}'), url('${headerImage}')`;
     
     title.innerText = game.name;
     
-    // 가격 표시
     if (game.final_price === 0) {
         price.innerText = "Free to Play";
     } else {
         price.innerText = `$${(game.final_price / 100).toFixed(2)}`;
     }
 
-    // [수정] 배너에 'NEW RELEASE'라고 명확히 표시
-    if(newBadge) newBadge.innerText = "NEW RELEASE";
-    releaseDate.innerText = "Just Released on Steam"; 
-
+    releaseDate.innerText = "Featured & Recommended"; 
     btn.onclick = () => window.open(`https://store.steampowered.com/app/${game.id}`, '_blank');
 }
 
@@ -81,11 +79,6 @@ function updateGameGrid(games) {
             discountHtml = `<span class="discount">-${game.discount_percent}%</span>`;
         }
 
-        // 윈도우/맥 지원 여부 확인 (데이터에 있을 경우)
-        let platformIcon = '';
-        if (game.windows_available) platformIcon += '🪟 ';
-        if (game.mac_available) platformIcon += '🍎 ';
-
         card.innerHTML = `
             <img src="${game.header_image}" class="card-image" alt="${game.name}">
             <div class="card-info">
@@ -105,12 +98,40 @@ function updateGameGrid(games) {
     });
 }
 
-// 비상용 데이터 (연결 실패 시에만 나옴)
+// [핵심 변경] 비상용 데이터를 '오공'에서 '몬스터 헌터 와일즈' 등 최신작으로 교체
 function useFallbackData() {
-    // 혹시라도 연결이 또 실패하면 보여줄 데이터
     const fallbackGames = [
-        { id: 2358720, name: "Black Myth: Wukong (Offline Mode)", final_price: 5999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2358720/header.jpg" },
-        { id: 1623730, name: "Palworld", final_price: 2999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1623730/header.jpg" },
+        // 1. 메인 배너: 몬스터 헌터 와일즈 (2025 기대작)
+        { 
+            id: 2246340, 
+            name: "Monster Hunter Wilds", 
+            final_price: 6999, 
+            discount_percent: 0, 
+            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2246340/header.jpg" 
+        },
+        // 2. 문명 7
+        { 
+            id: 1295660, 
+            name: "Sid Meier's Civilization® VII", 
+            final_price: 6999, 
+            discount_percent: 0, 
+            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1295660/header.jpg" 
+        },
+        // 3. GTA 6 (가상의 데이터로 분위기 냄)
+        { 
+            id: 271590, // GTA5 ID를 빌려씀
+            name: "Grand Theft Auto VI", 
+            final_price: 6999, 
+            discount_percent: 0, 
+            header_image: "https://shared.fastly.steamstatic.com/store_images/library/hero.jpg" 
+        },
+        { 
+            id: 1086940, 
+            name: "Baldur's Gate 3", 
+            final_price: 5999, 
+            discount_percent: 10, 
+            header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1086940/header.jpg" 
+        }
     ];
     updateHeroSection(fallbackGames[0]);
     updateGameGrid(fallbackGames);
