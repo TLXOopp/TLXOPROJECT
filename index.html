@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TLXO</title> <style>
+    <title>TLXO</title>
+    <style>
         body {
             background-color: #ffffff;
             display: flex;
@@ -17,31 +18,45 @@
             text-align: center;
             padding: 0 20px;
         }
+        
         h1 {
-            color: #1a1a1a;
-            font-size: 2.5rem; /* 제목(SITAE)은 조금 더 크게 */
             font-weight: 300;
             letter-spacing: 4px;
             text-transform: uppercase;
-            margin-bottom: 10px; /* 제목과 설명 사이 간격 */
+            margin-bottom: 10px;
         }
+
+        /* 링크 스타일: 기본 검은색 설정 */
+        .logo-link {
+            text-decoration: none; /* 밑줄 제거 */
+            color: #1a1a1a;
+            font-size: 2.5rem;
+            display: inline-block;
+        }
+
+        /* 마우스 오버, 클릭, 방문 후에도 항상 검은색 유지 */
+        .logo-link:hover, 
+        .logo-link:active, 
+        .logo-link:visited {
+            color: #1a1a1a; 
+            cursor: pointer;
+        }
+
         p {
-            color: #555; /* 설명 글씨는 회색으로 차분하게 */
+            color: #555;
             font-size: 1rem;
             line-height: 1.6;
-            margin-bottom: 20px;
-            word-break: keep-all; /* 한글 단어 끊김 방지 */
-        }
-        .emoji {
-            font-size: 1.5rem;
-            opacity: 0.6;
+            margin-top: 20px;
+            word-break: keep-all;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>TLXO</h1>
-
+        <h1>
+            <a href="about.html" class="logo-link">TLXO</a>
+        </h1>
         <p>I AM CRAWLING, SLOWLY BUT SURELY.</p>
+    </div>
 </body>
 </html>
