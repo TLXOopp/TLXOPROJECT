@@ -1,21 +1,18 @@
 name: Update Game Data
 
-# 언제 일할지 정합니다 (매일 1시간마다 & 내가 코드를 수정해서 올릴 때)
+permissions:
+  contents: write # [중요] 로봇에게 쓰기 권한 부여
+
 on:
   schedule:
-    - cron: '0 * * * *' # 매 시간 0분마다 실행
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: write
+    - cron: '0 * * * *' # 1시간마다 실행
+  workflow_dispatch: # 수동 실행 버튼 활성화
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     steps:
-      - name: 저장소 체크아웃 (코드 가져오기)
+      - name: 코드 가져오기
         uses: actions/checkout@v3
 
       - name: Node.js 설치
@@ -23,12 +20,11 @@ jobs:
         with:
           node-version: '18'
 
-      - name: 데이터 업데이트 실행 (updater.js 실행)
+      - name: 데이터 수집 실행
         run: node updater.js
 
-      - name: 변경 사항 저장 (games.json 커밋)
-        run: |
-          git config --global user.name "GitHub Action Bot"
-          git config --global user.email "actions@github.com"
-          git add games.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🎮 Update game data" && git push)
+      - name: 결과 저장 (자동 커밋)
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "🎮 최신 스팀 데이터 업데이트"
+          file_pattern: games.json
