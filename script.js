@@ -1,31 +1,33 @@
-const STEAM_API_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories') + '&cache=' + new Date().getTime();
+// 1. 배달부 교체: 더 안정적인 corsproxy.io를 사용합니다.
+const STEAM_API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://store.steampowered.com/api/featuredcategories');
 
 async function fetchGameData() {
     try {
+        console.log("📡 스팀 서버에 신호 보내는 중...");
         const response = await fetch(STEAM_API_URL);
-        const data = await response.json();
-        const steamData = JSON.parse(data.contents);
         
-        // [중요 변경점] || 연산자를 삭제했습니다.
-        // 이제 TopSellers(인기작)나 specials(할인)으로 넘어가지 않고
-        // 오직 'NewReleases' 데이터가 있을 때만 작동합니다.
+        // 2. 데이터 포장 뜯기 방식 변경 (배달부가 바뀌어서 포장 방식도 달라짐)
+        // 이전 배달부(AllOrigins)와 달리, 이번 배달부는 스팀 데이터를 그대로 줍니다.
+        const steamData = await response.json(); 
+
         const newReleases = steamData.NewReleases;
         
         if (!newReleases || !newReleases.items || newReleases.items.length === 0) {
-            throw new Error("신작 데이터를 찾을 수 없습니다.");
+            throw new Error("신작 리스트가 비어있습니다.");
         }
 
         const games = newReleases.items;
+        console.log("✅ 데이터 수신 성공! 게임 개수:", games.length);
 
-        // 1. 가장 최신이면서 주목받는 1위를 배너에 배치
+        // 1. 대형 배너 (1번째 게임)
         updateHeroSection(games[0]);
 
-        // 2. 나머지 신작들을 리스트에 배치 (1번부터 12번까지)
+        // 2. 카드 리스트 (나머지 게임)
         updateGameGrid(games.slice(1, 13));
 
     } catch (error) {
-        console.error("데이터 로딩 실패:", error);
-        // 연결 실패 시 보여줄 데이터도 '최신 기대작'으로 교체했습니다.
+        console.error("🚨 연결 실패! 원인:", error);
+        // 실패하면 비상용 데이터를 보여줍니다.
         useFallbackData();
     }
 }
@@ -36,23 +38,25 @@ function updateHeroSection(game) {
     const price = document.querySelector('.hero-price');
     const releaseDate = document.querySelector('.hero-release');
     const btn = document.querySelector('.hero-btn');
+    const newBadge = document.querySelector('.new-badge'); // 배지 선택자 추가
 
     const heroImage = `https://cdn.akamai.steamstatic.com/steam/apps/${game.id}/library_hero.jpg`;
     
-    // 이미지 로딩 실패 시 대비 (배너가 흰색으로 나오는 것 방지)
+    // 이미지 설정
     heroSection.style.backgroundImage = `url('${heroImage}'), url('${game.header_image}')`;
     
     title.innerText = game.name;
     
-    // 가격 표시 로직
+    // 가격 표시
     if (game.final_price === 0) {
         price.innerText = "Free to Play";
     } else {
         price.innerText = `$${(game.final_price / 100).toFixed(2)}`;
     }
 
-    // 신작이므로 'Now Available'로 고정하거나 데이터가 있다면 표시
-    releaseDate.innerText = "Just Released"; 
+    // [수정] 배너에 'NEW RELEASE'라고 명확히 표시
+    if(newBadge) newBadge.innerText = "NEW RELEASE";
+    releaseDate.innerText = "Just Released on Steam"; 
 
     btn.onclick = () => window.open(`https://store.steampowered.com/app/${game.id}`, '_blank');
 }
@@ -66,25 +70,28 @@ function updateGameGrid(games) {
         card.className = 'game-card';
         
         let priceText = '';
-        
         if (game.final_price === 0) {
             priceText = "Free";
         } else {
             priceText = `$${(game.final_price / 100).toFixed(2)}`;
         }
 
-        // 신작 위주이므로 할인율 배지는 할인이 있을 때만 표시
         let discountHtml = '';
         if (game.discount_percent > 0) {
             discountHtml = `<span class="discount">-${game.discount_percent}%</span>`;
         }
+
+        // 윈도우/맥 지원 여부 확인 (데이터에 있을 경우)
+        let platformIcon = '';
+        if (game.windows_available) platformIcon += '🪟 ';
+        if (game.mac_available) platformIcon += '🍎 ';
 
         card.innerHTML = `
             <img src="${game.header_image}" class="card-image" alt="${game.name}">
             <div class="card-info">
                 <h3 class="game-title">${game.name}</h3>
                 <div class="card-meta">
-                    <span>New</span>
+                    <span style="font-size:0.8rem; color:#007aff;">New</span>
                     <div>
                         ${discountHtml}
                         <span class="card-price">${priceText}</span>
@@ -98,14 +105,12 @@ function updateGameGrid(games) {
     });
 }
 
-// [비상용 데이터 수정]
-// API가 막혔을 때 보여줄 데이터도 철 지난 게임(엘든링 등)을 빼고
-// 2024-2025년 최신 화제작 위주로 변경했습니다.
+// 비상용 데이터 (연결 실패 시에만 나옴)
 function useFallbackData() {
+    // 혹시라도 연결이 또 실패하면 보여줄 데이터
     const fallbackGames = [
-        { id: 2358720, name: "Black Myth: Wukong", final_price: 5999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2358720/header.jpg" },
+        { id: 2358720, name: "Black Myth: Wukong (Offline Mode)", final_price: 5999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/2358720/header.jpg" },
         { id: 1623730, name: "Palworld", final_price: 2999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/1623730/header.jpg" },
-        { id: 553850, name: "Helldivers 2", final_price: 3999, discount_percent: 0, header_image: "https://cdn.akamai.steamstatic.com/steam/apps/553850/header.jpg" }
     ];
     updateHeroSection(fallbackGames[0]);
     updateGameGrid(fallbackGames);
